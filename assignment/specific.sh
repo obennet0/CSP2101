@@ -8,7 +8,7 @@ while true; do
             echo "File already exists. Please select another image to download"
             echo
             continue  
-        elif [[ $thumbnail =~ [DSC0][1-2][0-9]{3} ]]; then
+        elif [[ $thumbnail =~ ^[DSC0][1-2][0-9]{3}$ ]]; then
             echo "You have selected $thumbnail. Searching now."
             echo
             break

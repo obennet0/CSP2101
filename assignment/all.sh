@@ -7,7 +7,7 @@ fi
 mkdir images
 echo "Downloading images into 'images' folder:"
 echo
-sleep 2
+sleep 1
 file=url.txt
 
 for url in $(cat $file); do
