@@ -1,16 +1,13 @@
 #!/bin/bash
-
 while true; do
     while true; do
         read -p "Enter the specific thumbnail of the image you would like to download: " thumbnail
-        echo
-        if [ -f $thumbnail.jpg ]; then
+        if [ -e $thumbnail.jpg ]; then
             echo "File already exists. Please select another image to download"
             echo
-            continue  
-        elif [[ $thumbnail =~ ^[DSC0][1-2][0-9]{3}$ ]]; then
+            continue 
+        elif [[ $thumbnail =~ [DSC0][1-2][0-9]{3} ]]; then
             echo "You have selected $thumbnail. Searching now."
-            echo
             break
         else
             echo "Invalid input"
@@ -22,22 +19,20 @@ while true; do
 
     if [ -s specific_image.txt ]; then
         wget -q -i specific_image.txt
+        filesize=$(du -b $thumbnail.jpg | awk '{printf "%3.2f", $1/1000}')
+        unit=KB
+        echo
+        sleep 1
+        echo "Downloading $thumbnail, with the filename $thumbnail.jpg, with a filesize of $filesize $unit...File Download Complete"
         rm specific_image.txt
         break
     else
-        sleep 1
+        echo   
+        sleep 1    
         echo "File not found. Check the image thumbnail and try again."
         rm specific_image.txt
         echo
-        continue
     fi
-done 
-
-filesize=$(du -b $thumbnail.jpg | awk '{printf "%3.2f", $1/1000}')
-unit=KB
-
-
-sleep 1
-echo "Downloading $thumbnail, with the filename $thumbnail.jpg, with a filesize of $filesize $unit...File Download Complete"
+done
 echo
 echo "PROGRAM FINISHED"
