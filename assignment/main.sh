@@ -9,191 +9,194 @@ curl -s "https://www.ecu.edu.au/service-centres/MACSC/gallery/gallery.php?folder
 cat temp.txt | grep "jpg" | sed -e 's/<img src="//' -e 's/".*//' -e 's/^[ \t]*//' > url.txt
 rm temp.txt
 
-echo "Please select from the following options:"
-echo 
-echo "1) Download a specific thumbnail"
-echo "2) Download ALL thumbnails"
-echo "3) Dowload a range of images"
-echo "4) Download a number of random images"
-echo
-while true; do 
-    read -p "Enter the option number that matches your requirements: " selection
-        if [[ $selection -ge 1 && $selection -le 4 ]]; then
-            echo
-            echo "You have selected option: $selection"
-            echo
-            break
-        else
-            echo "That is not a valid option"
-            continue
-        fi
-done
+run_program='y'
 
-case $selection in
-    '1')
-        while true; do
+while [[ $run_program == 'y' ]]; do
+
+    echo "Please select from the following options:"
+    echo 
+    echo "1) Download a specific thumbnail"
+    echo "2) Download ALL thumbnails"
+    echo "3) Dowload a range of images"
+    echo "4) Download a number of random images"
+    echo
+    while true; do 
+        read -p "Enter the option number that matches your requirements: " selection
+            if [[ $selection -ge 1 && $selection -le 4 ]]; then
+                echo
+                echo "You have selected option: $selection"
+                echo
+                break
+            else
+                echo "That is not a valid option"
+                continue
+            fi
+    done
+
+    case $selection in
+        '1')
             while true; do
-                read -p "Enter the specific thumbnail of the image you would like to download: " thumbnail
-                if [ -e $thumbnail.jpg ]; then
-                    echo "File already exists. Please select another image to download"
+                while true; do
+                    read -p "Enter the specific thumbnail of the image you would like to download: " thumbnail
+                    if [ -e $thumbnail.jpg ]; then
+                        echo "File already exists. Please select another image to download"
+                        echo
+                        continue 
+                    elif [[ $thumbnail =~ [DSC0][1-2][0-9]{3} ]]; then
+                        echo "You have selected $thumbnail. Searching now."
+                        break
+                    else
+                        echo "Invalid input"
+                        continue
+                    fi
+                done
+
+                cat url.txt | grep $thumbnail > specific_image.txt
+
+                if [ -s specific_image.txt ]; then
+                    wget -q -i specific_image.txt
+                    filesize=$(du -b $thumbnail.jpg | awk '{printf "%3.2f", $1/1000}')
+                    unit=KB
                     echo
-                    continue 
-                elif [[ $thumbnail =~ [DSC0][1-2][0-9]{3} ]]; then
-                    echo "You have selected $thumbnail. Searching now."
+                    sleep 1
+                    echo "Downloading $thumbnail, with the filename $thumbnail.jpg, with a filesize of $filesize $unit...File Download Complete"
+                    rm specific_image.txt
                     break
                 else
+                    echo   
+                    sleep 1    
+                    echo "File not found. Check the image thumbnail and try again."
+                    rm specific_image.txt
+                    echo
+                fi
+            done
+            ;;
+        '2')
+            if [ -d images ]; then
+                rm -r images
+            fi
+
+            mkdir images
+            echo "Downloading images into 'images' folder:"
+            echo
+            sleep 1
+
+            file=url.txt
+
+            for url in $(cat $file); do
+                wget -q $url -P images/
+                file_name=$(echo $url | awk -F / '{print $8}')
+                image_num=$(echo $url | awk -F / '{print $8}' | sed 's/.jpg//')
+                file_size=$(du -b images/$file_name | awk '{printf "%3.2f", $1/1000}')
+                unit=KB
+                echo "Downloading $image_num, with the file name $file_name, with a file size of $file_size $unit...File Download Complete"
+            done
+            ;;
+        '3')
+            cat url.txt | awk -F / '{print $8}' | sed 's/DSC0//; s/.jpg//' > id_numbers.txt
+
+            while true; do
+                read -p "Enter a 4 digit number for the starting range: " start
+                if [[ $start -ge 1500 && $start =~ ^[0-9]{4}$ ]]; then
+                    break
+                else
+                    echo
                     echo "Invalid input"
+                    echo
                     continue
                 fi
             done
 
-            cat url.txt | grep $thumbnail > specific_image.txt
-
-            if [ -s specific_image.txt ]; then
-                wget -q -i specific_image.txt
-                filesize=$(du -b $thumbnail.jpg | awk '{printf "%3.2f", $1/1000}')
-                unit=KB
+            while true; do
+                read -p "Enter a 4 digit number for the ending range value: " end
                 echo
-                sleep 1
-                echo "Downloading $thumbnail, with the filename $thumbnail.jpg, with a filesize of $filesize $unit...File Download Complete"
-                rm specific_image.txt
-                break
+                if [[ $end -gt $start && $end =~ ^[0-9]{4}$ ]];then 
+                    break
+                else
+                    echo "Invalid input"
+                    echo
+                    continue
+                fi
+            done
+
+            file=id_numbers.txt
+
+            for id in $(cat $file); do
+                if [[ $id -ge $start && $id -le $end ]]; then
+                    grep $id url.txt >> range_url.txt
+                fi
+            done
+
+            if [ -e range_url.txt ]; then
+                for url in $(cat range_url.txt); do
+                            wget -q -N $url
+                            file_name=$(echo $url | awk -F / '{print $8}')
+                            image_num=$(echo $url | awk -F / '{print $8}' | sed 's/.jpg//')
+                            file_size=$(du -b $file_name | awk '{printf "%3.2f", $1/1000}')
+                            unit=KB
+                            echo "Downloading $image_num, with the file name $file_name, with a file size of $file_size $unit...File Download Complete"
+                done 
+                rm range_url.txt
             else
-                echo   
-                sleep 1    
-                echo "File not found. Check the image thumbnail and try again."
-                rm specific_image.txt
-                echo
+                echo "Sorry, no files found in that range"
             fi
-        done
-        echo
-        echo "PROGRAM FINISHED"
-        ;;
-    '2')
-        if [ -d images ]; then
-            rm -r images
-        fi
 
-        mkdir images
-        echo "Downloading images into 'images' folder:"
-        echo
-        sleep 1
-
-        file=url.txt
-
-        for url in $(cat $file); do
-            wget -q $url -P images/
-            file_name=$(echo $url | awk -F / '{print $8}')
-            image_num=$(echo $url | awk -F / '{print $8}' | sed 's/.jpg//')
-            file_size=$(du -b images/$file_name | awk '{printf "%3.2f", $1/1000}')
-            unit=KB
-            echo "Downloading $image_num, with the file name $file_name, with a file size of $file_size $unit...File Download Complete"
-        done
-
-        echo
-        echo "PROGRAM FINISHED"
-        ;;
-    '3')
-        cat url.txt | awk -F / '{print $8}' | sed 's/DSC0//; s/.jpg//' > id_numbers.txt
-
-        while true; do
-            read -p "Enter a 4 digit number for the starting range: " start
-            if [[ $start -ge 1500 && $start =~ ^[0-9]{4}$ ]]; then
-                break
-            else
+            rm id_numbers.txt
+            ;;
+        '4')
+            while true; do
+                read -p "Enter how many random images required: " random
                 echo
-                echo "Invalid input"
-                echo
-                continue
-            fi
-        done
-
-        while true; do
-            read -p "Enter a 4 digit number for the ending range value: " end
-            echo
-            if [[ $end -gt $start && $end =~ ^[0-9]{4}$ ]];then 
-                break
-            else
-                echo "Invalid input"
-                echo
-                continue
-            fi
-        done
-
-        file=id_numbers.txt
-
-        for id in $(cat $file); do
-            if [[ $id -ge $start && $id -le $end ]]; then
-                grep $id url.txt >> range_url.txt
-            fi
-        done
-
-        if [ -e range_url.txt ]; then
-            for url in $(cat range_url.txt); do
-                        wget -q -N $url
-                        file_name=$(echo $url | awk -F / '{print $8}')
-                        image_num=$(echo $url | awk -F / '{print $8}' | sed 's/.jpg//')
-                        file_size=$(du -b $file_name | awk '{printf "%3.2f", $1/1000}')
-                        unit=KB
-                        echo "Downloading $image_num, with the file name $file_name, with a file size of $file_size $unit...File Download Complete"
+                max=$(wc -l url.txt | awk '{print $1}')
+                if ! [[ $random =~ ^[0-9]+$ ]]; then
+                    echo "Thats not a number!"
+                    echo "try again"
+                    echo
+                elif [[ $random -gt $max ]]; then
+                    echo "Thats too many images"
+                    echo "Input a lower number"
+                    echo
+                elif [[ $random -le $max && $random -gt 0 ]]; then
+                    echo "Selecting random images now."
+                    echo
+                    break
+                    sleep 1        
+                else
+                    echo "Invalid input. Enter a number"
+                    echo
+                fi
             done 
-            rm range_url.txt
-        else
-            echo "Sorry, no files found in that range"
-        fi
 
-        rm id_numbers.txt
+            shuf -n $random url.txt | sort > random_img.txt
+            file=random_img.txt
 
-        echo 
-        echo "PROGRAM FINISHED"
-        ;;
-    '4')
-        while true; do
-            read -p "Enter how many random images required: " random
-            echo
-            max=$(wc -l url.txt | awk '{print $1}')
-            if ! [[ $random =~ ^[0-9]+$ ]]; then
-                echo "Thats not a number!"
-                echo "try again"
-                echo
-            elif [[ $random -gt $max ]]; then
-                echo "Thats too many images"
-                echo "Input a lower number"
-                echo
-            elif [[ $random -le $max && $random -gt 0 ]]; then
-                echo "Selecting random images now."
-                echo
-                break
-                sleep 1        
-            else
-                echo "Invalid input. Enter a number"
-                echo
-            fi
-        done 
+            for url in $(cat $file); do
+                wget -q $url
+                file_name=$(echo $url | awk -F / '{print $8}')
+                image_num=$(echo $url | awk -F / '{print $8}' | sed 's/.jpg//')
+                file_size=$(du -b $file_name | awk '{printf "%3.2f", $1/1000}')
+                unit=KB
+                echo "Downloading $image_num, with the file name $file_name, with a file size of $file_size $unit...File Download Complete"
+            done
 
-        shuf -n $random url.txt | sort > random_img.txt
-        file=random_img.txt
+            rm random_img.txt
+            ;;
+        *)
+            echo 'Fail'
+            exit 1
+            ;;
+    esac
 
-        for url in $(cat $file); do
-            wget -q $url
-            file_name=$(echo $url | awk -F / '{print $8}')
-            image_num=$(echo $url | awk -F / '{print $8}' | sed 's/.jpg//')
-            file_size=$(du -b $file_name | awk '{printf "%3.2f", $1/1000}')
-            unit=KB
-            echo "Downloading $image_num, with the file name $file_name, with a file size of $file_size $unit...File Download Complete"
-        done
+    echo
+    read -p 'Run program again? (enter y for yes) ' run_program
+    echo
+    continue
 
-        rm random_img.txt
-
-        echo 
-        echo "PROGRAM FINISHED"
-        ;;
-    *)
-        echo 'Fail'
-        exit 1
-        ;;
-esac
+done
 
 rm url.txt
+
+echo 
+echo "PROGRAM FINISHED"
 
 exit 0
