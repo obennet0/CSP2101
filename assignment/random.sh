@@ -1,7 +1,27 @@
 #!/bin/bash
 
-read -p "Enter how many random images required: " random
-echo
+while true; do
+    read -p "Enter how many random images required: " random
+    echo
+    max=$(wc -l url.txt | awk '{print $1}')
+    if ! [[ $random =~ ^[0-9]+$ ]]; then
+        echo "Thats not a number!"
+        echo "try again"
+        echo
+    elif [[ $random -gt $max ]]; then
+        echo "Thats too many images"
+        echo "Input a lower number"
+        echo
+    elif [[ $random -le $max && $random -gt 0 ]]; then
+        echo "Selecting random images now."
+        echo
+        break
+        sleep 1        
+    else
+        echo "Invalid input. Enter a number"
+        echo
+    fi
+done 
 
 shuf -n $random url.txt | sort > random_img.txt
 file=random_img.txt
