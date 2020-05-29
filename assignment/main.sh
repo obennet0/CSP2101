@@ -29,7 +29,7 @@ while [[ $run_program == 'y' ]]; do
                 sleep 1
                 break
             else
-                echo "INVALID OPTION! Please select on of the available options."
+                echo "INVALID OPTION! Please select from the available options."
                 echo
                 continue
             fi
