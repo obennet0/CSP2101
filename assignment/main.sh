@@ -15,20 +15,22 @@ while [[ $run_program == 'y' ]]; do
 
     echo "Please select from the following options:"
     echo 
-    echo "1) Download a specific thumbnail"
-    echo "2) Download ALL thumbnails"
-    echo "3) Dowload a range of images"
-    echo "4) Download a number of random images"
+    echo "  To download a SPECIFIC thumbnail----------Enter [1]"
+    echo "  To download ALL thumbnails----------------Enter [2]"
+    echo "  To download a RANGE of images-------------Enter [3]"
+    echo "  To download a number of RANDOM images-----Enter [4]"
     echo
     while true; do 
         read -p "Enter the option number that matches your requirements: " selection
+        echo
             if [[ $selection -ge 1 && $selection -le 4 ]]; then
-                echo
                 echo "You have selected option: $selection"
                 echo
+                sleep 1
                 break
             else
-                echo "That is not a valid option"
+                echo "INVALID OPTION! Please select on of the available options."
+                echo
                 continue
             fi
     done
@@ -38,15 +40,19 @@ while [[ $run_program == 'y' ]]; do
             while true; do
                 while true; do
                     read -p "Enter the specific thumbnail of the image you would like to download: " thumbnail
+                    echo
                     if [ -e $thumbnail.jpg ]; then
-                        echo "File already exists. Please select another image to download"
+                        echo "FILE ALEADY EXISTS! Please select another image to download"
                         echo
                         continue 
                     elif [[ $thumbnail =~ [DSC0][1-2][0-9]{3} ]]; then
-                        echo "You have selected $thumbnail. Searching now."
+                        echo "You have selected $thumbnail. Searching now:"
+                        echo
+                        sleep 1
                         break
                     else
-                        echo "Invalid input"
+                        echo "INVALID INPUT!"
+                        echo
                         continue
                     fi
                 done
@@ -57,15 +63,13 @@ while [[ $run_program == 'y' ]]; do
                     wget -q -i specific_image.txt
                     filesize=$(du -b $thumbnail.jpg | awk '{printf "%3.2f", $1/1000}')
                     unit=KB
-                    echo
-                    sleep 1
                     echo "Downloading $thumbnail, with the filename $thumbnail.jpg, with a filesize of $filesize $unit...File Download Complete"
                     rm specific_image.txt
                     break
                 else
                     echo   
                     sleep 1    
-                    echo "File not found. Check the image thumbnail and try again."
+                    echo "FILE NOT FOUND! Check the image thumbnail and try again."
                     rm specific_image.txt
                     echo
                 fi
@@ -77,7 +81,7 @@ while [[ $run_program == 'y' ]]; do
             fi
 
             mkdir images
-            echo "Downloading images into 'images' folder:"
+            echo "Downloading into 'images' folder:"
             echo
             sleep 1
 
@@ -96,24 +100,24 @@ while [[ $run_program == 'y' ]]; do
             cat url.txt | awk -F / '{print $8}' | sed 's/DSC0//; s/.jpg//' > id_numbers.txt
 
             while true; do
-                read -p "Enter a 4 digit number for the starting range: " start
+                read -p "Enter a 4 digit number for the STARTING range value: " start
                 if [[ $start -ge 1500 && $start =~ ^[0-9]{4}$ ]]; then
                     break
                 else
                     echo
-                    echo "Invalid input"
+                    echo "INVALID INPUT!"
                     echo
                     continue
                 fi
             done
 
             while true; do
-                read -p "Enter a 4 digit number for the ending range value: " end
+                read -p "Enter a 4 digit number for the ENDING range value: " end
                 echo
                 if [[ $end -gt $start && $end =~ ^[0-9]{4}$ ]];then 
                     break
                 else
-                    echo "Invalid input"
+                    echo "INVALID INPUT! Enter a 4 digit number."
                     echo
                     continue
                 fi
@@ -138,7 +142,7 @@ while [[ $run_program == 'y' ]]; do
                 done 
                 rm range_url.txt
             else
-                echo "Sorry, no files found in that range"
+                echo "Sorry, no files found in that range."
             fi
 
             rm id_numbers.txt
@@ -149,20 +153,18 @@ while [[ $run_program == 'y' ]]; do
                 echo
                 max=$(wc -l url.txt | awk '{print $1}')
                 if ! [[ $random =~ ^[0-9]+$ ]]; then
-                    echo "Thats not a number!"
-                    echo "try again"
+                    echo "INVALID INPUT! Enter a number"
                     echo
                 elif [[ $random -gt $max ]]; then
-                    echo "Thats too many images"
-                    echo "Input a lower number"
+                    echo "Value exceeds number of available images! Input a lower value."
                     echo
                 elif [[ $random -le $max && $random -gt 0 ]]; then
-                    echo "Selecting random images now."
+                    echo "Selecting random images now:"
                     echo
                     break
                     sleep 1        
                 else
-                    echo "Invalid input. Enter a number"
+                    echo "INVALID INPUT! Enter a number"
                     echo
                 fi
             done 
@@ -188,7 +190,7 @@ while [[ $run_program == 'y' ]]; do
     esac
 
     echo
-    read -p 'Run program again? (enter y for yes) ' run_program
+    read -p 'Run program again? [Enter y for yes] ' run_program
     echo
     continue
 
@@ -196,7 +198,6 @@ done
 
 rm url.txt
 
-echo 
 echo "PROGRAM FINISHED"
 
 exit 0
