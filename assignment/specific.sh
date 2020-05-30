@@ -19,11 +19,11 @@ while true; do
 
     if [ -s specific_image.txt ]; then
         wget -q -i specific_image.txt
-        filesize=$(du -b $thumbnail.jpg | awk '{printf "%3.2f", $1/1000}')
+        file_size=$(du -b $thumbnail.jpg | awk '{printf "%3.2f", $1/1000}')
         unit=KB
         echo
         sleep 1
-        echo "Downloading $thumbnail, with the filename $thumbnail.jpg, with a filesize of $filesize $unit...File Download Complete"
+        echo "Downloading $thumbnail, with the filename $thumbnail.jpg, with a file size of $file_size $unit...File Download Complete"
         rm specific_image.txt
         break
     else

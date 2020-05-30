@@ -5,23 +5,28 @@
 # Unit Name: Scripting Languages
 # Assessment: Assignment 3 Software Based Solution
 
+echo
+echo "Establishing Connection..."
 curl -s "https://www.ecu.edu.au/service-centres/MACSC/gallery/gallery.php?folder=152" > temp.txt
-cat temp.txt | grep "jpg" | sed -e 's/<img src="//' -e 's/".*//' -e 's/^[ \t]*//' > url.txt
+cat temp.txt | grep "jpg" | sed -e 's/<img src="//; s/".*//; s/^[ \t]*//' > url.txt
 rm temp.txt
+echo
+echo "Connection Successful"
 
 run_program='y'
 
 while [[ $run_program == 'y' ]]; do
 
+    echo
     echo "Please select one the following options:"
     echo 
 
     while true; do 
 
-        echo "  To download a SPECIFIC thumbnail----------Enter [1]"
-        echo "  To download ALL thumbnails----------------Enter [2]"
-        echo "  To download a RANGE of images-------------Enter [3]"
-        echo "  To download a number of RANDOM images-----Enter [4]"
+        echo "  To download a SPECIFIC thumbnail---------------Enter [1]"
+        echo "  To download ALL thumbnails---------------------Enter [2]"
+        echo "  To download a RANGE of images------------------Enter [3]"
+        echo "  To download a number of images at RANDOM-------Enter [4]"
         echo
         read -p "Enter the option number that matches your requirements: " selection
         echo
@@ -47,12 +52,12 @@ while [[ $run_program == 'y' ]]; do
                         echo "FILE ALEADY EXISTS! Please select another image to download"
                         echo                         
                     elif [[ $thumbnail =~ [DSC0][0-9]{4} ]]; then
-                        echo "You have selected $thumbnail. Searching now:"
+                        echo "You have selected $thumbnail. Searching now..."
                         echo
                         sleep 1
                         break
                     else
-                        echo "INVALID INPUT!"
+                        echo "INCORRECT FILE NAME! Check the image thumbnail and try again."
                         echo                        
                     fi
                 done
@@ -61,9 +66,9 @@ while [[ $run_program == 'y' ]]; do
 
                 if [ -s specific_image.txt ]; then
                     wget -q -i specific_image.txt
-                    filesize=$(du -b $thumbnail.jpg | awk '{printf "%3.2f", $1/1000}')
+                    file_size=$(du -b $thumbnail.jpg | awk '{printf "%3.2f", $1/1000}')
                     unit=KB
-                    echo "Downloading $thumbnail, with the filename $thumbnail.jpg, with a filesize of $filesize $unit...File Download Complete"
+                    echo "Downloading $thumbnail, with the filename $thumbnail.jpg, with a file size of $file_size $unit...File Download Complete"
                     rm specific_image.txt
                     break
                 else  
@@ -119,7 +124,7 @@ while [[ $run_program == 'y' ]]; do
                     read -p "Enter a 4 digit number for the ENDING range value: " end
                     echo
                     if [[ $end -le $start ]]; then
-                        echo "INVALID INPUT! Ending value must be higher that starting value."
+                        echo "INVALID INPUT! Ending value must be higher than the starting value."
                         echo
                     elif [[ $end -gt $start && $end =~ ^[0-9]{4}$ ]];then 
                         break
@@ -149,7 +154,8 @@ while [[ $run_program == 'y' ]]; do
                     rm range_url.txt
                     break
                 else
-                    echo "Sorry, no files found in that range."                    
+                    echo "Sorry, no files found in that range."
+                    echo                    
                 fi
             done
 
@@ -211,5 +217,7 @@ done
 
 rm url.txt
 
-echo "PROGRAM TERMINATED"
+echo "PROGRAM TERMINATED, GOODBYE"
+echo
+
 exit 0
