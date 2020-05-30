@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cat url.txt | awk -F / '{print $8}' | sed 's/DSC0//; s/.jpg//' > id_numbers.txt
+cat url.txt | awk -F / '{print $8}' | sed 's/DSC0//; s/.jpg//' > id_number.txt
 
 while true; do
     read -p "Enter a 4 digit number for the starting range: " start
@@ -10,7 +10,7 @@ while true; do
         echo
         echo "Invalid input"
         echo
-        continue
+        
     fi
 done
 
@@ -22,11 +22,11 @@ while true; do
     else
         echo "Invalid input"
         echo
-        continue
+        
     fi
 done
 
-file=id_numbers.txt
+file=id_number.txt
 
 for id in $(cat $file); do
     if [[ $id -ge $start && $id -le $end ]]; then
@@ -48,7 +48,7 @@ else
     echo "Sorry, no files found in that range"
 fi
 
-rm id_numbers.txt
+rm id_number.txt
 
 echo 
 echo "PROGRAM FINISHED"

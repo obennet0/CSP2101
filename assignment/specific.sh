@@ -5,13 +5,13 @@ while true; do
         if [ -e $thumbnail.jpg ]; then
             echo "File already exists. Please select another image to download"
             echo
-            continue 
+             
         elif [[ $thumbnail =~ [DSC0][1-2][0-9]{3} ]]; then
             echo "You have selected $thumbnail. Searching now."
             break
         else
             echo "Invalid input"
-            continue
+            
         fi
     done
 

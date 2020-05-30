@@ -14,7 +14,7 @@ while true; do
             break
         else
             echo "That is not a valid option"
-            continue
+            
         fi
 done
 
